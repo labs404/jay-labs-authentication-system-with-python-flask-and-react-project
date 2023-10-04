@@ -3,25 +3,9 @@ const getState = ({ getStore, getActions, setStore }) => {
 		store: {
 			token: null,
 			message: null,
-			demo: [
-				{
-					title: "FIRST",
-					background: "white",
-					initial: "white"
-				},
-				{
-					title: "SECOND",
-					background: "white",
-					initial: "white"
-				}
-			]
+			email: null
 		},
 		actions: {
-			// Use getActions to call a function within a fuction
-			exampleFunction: () => {
-				getActions().changeColor(0, "green");
-			},
-			// added login action below
 			login: async (email, password) => {
 				const options = {
 					method: "POST",
@@ -35,44 +19,72 @@ const getState = ({ getStore, getActions, setStore }) => {
 						}
 					)
 				}
-				// turned into an async try await
-				/////////////////////////////////////////////////////
-				// fetch("https://cuddly-space-broccoli-7g6q4r97xw62p66x-3001.app.github.dev/api/token", options)
-				// .then(response => {
-				// 	if(response.status === 200) return response.json();
-				// })
-				// .then(data => {
-				// 	console.log("Access token:", data);
-				// 	sessionStorage.setItem("token", data.access_token);
-				// })
-				// .catch(error => console.log("There was an error.", error))
-				/////////////////////////////////////////////////////
 				try{
-					const response = await fetch("https://cuddly-space-broccoli-7g6q4r97xw62p66x-3001.app.github.dev/api/token", options)
+					const response = await fetch(process.env.BACKEND_URL + "api/token", options)
 					if(response.status !== 200) {
-						alert("Error! Response code: " + response.status)
+						alert("Error! Response code: " + response.status);
 						return false;
 					}
-					const data = await response.json()
+					const data = await response.json();
 					sessionStorage.setItem("token", data.access_token);
-					setStore({ token: data.access_token })
+					sessionStorage.setItem("email", email);
+					setStore({ token: data.access_token });
+					setStore({ email: email })
+					console.log("from flux login() here is your data", data);
 					return true;
 				}
 				catch(error) {
-					console.log("Login error! Please try again!")
+					console.log("Login error! Please try again!");
+					console.error("There was an error!!!!", error);
 				}
 			},
-			// added login function above
 			logout: () => {
-					//line below also works.
-					// sessionStorage.setItem("token", null);
+					const store = getStore();
 					sessionStorage.removeItem("token");
-					setStore({ token: null })
+					sessionStorage.removeItem("email");
+					setStore({ token: null });
+					setStore({ email: null });
+					console.log("from flux logout(), you are logged out", store.token)
+			},
+			signup: async (email, password) => {
+				const options = {
+					method: "POST",
+					headers: {
+						"Content-Type": "application/json"
+					},
+					body: JSON.stringify(
+						{
+							"email": email,
+							"password": password
+						}
+					)
+				};				
+				try {
+					const response = await fetch(process.env.BACKEND_URL + "api/signup", options);
+					if (response.ok) {
+					  	alert("You have successfully registered a new account!");
+					  	return true;
+					}
+					else {
+					  	alert("Signup failed. Please try again later.");
+						return false;
+					}
+				} 
+				catch (error) {
+					console.error("Error during signup:", error);
+				}				
+				return false;
 			},
 			syncSessionToken: () => {
 				const token = sessionStorage.getItem("token");
-				if (token && token !== "" && token !== undefined) {
+				if (token && token !== "" && token !== undefined && token !== null) {
 					setStore({ token: token })
+				}
+			},
+			syncSessionEmail : () => {
+				const email = sessionStorage.getItem("email");
+				if (email && email !== "" && email !== undefined && email !== null) {
+					setStore({ email: email })
 				}
 			},
 			getMessage: async () => {
@@ -91,14 +103,6 @@ const getState = ({ getStore, getActions, setStore }) => {
 				}catch(error){
 					console.log("Error loading message from backend", error)
 				}
-			},
-			changeColor: (index, color) => {
-				const store = getStore();
-				const demo = store.demo.map((elm, i) => {
-					if (i === index) elm.background = color;
-					return elm;
-				});
-				setStore({ demo: demo });
 			}
 		}
 	};

@@ -9,45 +9,22 @@ const Login = () => {
     const [ password, setPassword ] = useState("");
     const navigate = useNavigate();
 
-
     const handleLogin = () => {
-        //moved this block to flux.
-        //////////////////////////////////////////////////
-        // const options = {
-        //     method: "POST",
-        //     headers: {
-        //         "Content-Type": "application/json"
-        //     },
-        //     body: JSON.stringify(
-        //         {
-        //             "email": email,
-        //             "password": password
-        //         }
-        //     )
-        // }
-        // fetch("https://cuddly-space-broccoli-7g6q4r97xw62p66x-3001.app.github.dev/api/token", options)
-        // .then(response => {
-        //     if(response.status === 200) return response.json();
-        // })
-        // .then(data => {
-        //     console.log("Access token:", data);
-        //     sessionStorage.setItem("token", data.access_token);
-        // })
-        // .catch(error => console.log("There was an error.", error))
-        //////////////////////////////////////////////////
-        actions.login(email, password).then(() => {
-            navigate("/");
-        })
+        actions.login(email, password)
+    };
+
+    if (store.token && store.token !== "" && store.token !== undefined && store.token !== null) {
+        navigate("/private");
     }
 
 	return (
         <>
-        {(store.token && store.token != "" && store.token != undefined) ? <center><h1>You are logged in with the following token:</h1><p>{store.token}</p></center>
+        {(store.token && store.token !== "" && store.token !== undefined && store.token !== null) ? <center><h1>You are logged in with the following token:</h1><p>{store.token}</p></center>
         :
         <div className="container container-fluid text-center">
             <div className="text-center mt-5">
                 <div className="signup-header mb-3">
-                    <h1>Hello form Login!</h1>
+                    <h1>Hello from Jay's login.js!</h1>
                 </div>
                 <div className="input-group mb-3">
                     <span className="input-group-text" id="basic-addon1">Email</span>
